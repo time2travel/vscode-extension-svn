@@ -22,38 +22,41 @@ export function activate(context: vscode.ExtensionContext) {
         console.log('workspace root path is undefined.');
         return;
     }
-    const curSvn = new svn.SVN(rootPath);
-    curSvn.status((result: svn.SVNStatusResult) => {
-        let commitFiles: vscode.SourceControlResourceState[] = [];
-        let changeFiles: vscode.SourceControlResourceState[] = [];
-        for(let file of result.files){
-            if(file.status === 'modified'){
-                if(file.willCommit){
-                    commitFiles.push({
-                        resourceUri: vscode.Uri.file(file.filePath),
-                        command: {
-                            title: "change", 
-                            command: "svn.openChange",
-                            tooltip: "open file change.",
-                            arguments: [file.filePath]
-                        }
-                    });
-                }else{
-                    changeFiles.push({
-                        resourceUri: vscode.Uri.file(file.filePath),
-                        command: {
-                            title: "change",
-                            command: "svn.openChange",
-                            tooltip: "open file change.",
-                            arguments: [file.filePath]
-                        }
-                    });
+    const globalSVN = new svn.SVN(rootPath);
+    
+    context.subscriptions.push(vscode.commands.registerCommand("svn.status", (...args: any[]) => {
+        globalSVN.status((result: svn.SVNStatusResult) => {
+            let commitFiles: vscode.SourceControlResourceState[] = [];
+            let changeFiles: vscode.SourceControlResourceState[] = [];
+            for(let file of result.files){
+                if(file.status === 'modified'){
+                    if(file.willCommit){
+                        commitFiles.push({
+                            resourceUri: vscode.Uri.file(file.filePath),
+                            command: {
+                                title: "change", 
+                                command: "svn.openChange",
+                                tooltip: "open file change.",
+                                arguments: [file.filePath]
+                            }
+                        });
+                    }else{
+                        changeFiles.push({
+                            resourceUri: vscode.Uri.file(file.filePath),
+                            command: {
+                                title: "change",
+                                command: "svn.openChange",
+                                tooltip: "open file change.",
+                                arguments: [file.filePath]
+                            }
+                        });
+                    }
                 }
             }
-        }
-        commitResourceGroup.resourceStates = commitFiles;
-        changeResourceGroup.resourceStates = changeFiles;
-    });
+            commitResourceGroup.resourceStates = commitFiles;
+            changeResourceGroup.resourceStates = changeFiles;
+        });
+    }));
 
     context.subscriptions.push(vscode.commands.registerCommand("svn.commit", (...args: any[]) => {
         let commitFiles = commitResourceGroup.resourceStates;
@@ -62,8 +65,17 @@ export function activate(context: vscode.ExtensionContext) {
             commitFilesPath.push(file.resourceUri.path);
         }
         let message = svnSCM.inputBox.value.toString();
-        curSvn.commit(commitFilesPath, message, (result: string) => {
+        console.log(message);
+        globalSVN.commit(commitFilesPath, message, (result: string) => {
             console.log(result);
+            vscode.commands.executeCommand('svn.status');
+        });
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand("svn.update", (...args: any[]) => {
+        globalSVN.update((result: string) => {
+            console.log(result);
+            vscode.commands.executeCommand('svn.status');
         });
     }));
 
@@ -108,7 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
         }else{
             let objs = obj._resourceStates;
             for(let st of objs){
-
+                
             }
         }
     }));
@@ -119,6 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
         // vscode.commands.executeCommand('vscode.diff', args[0], args[0]);
     }));
     
+    vscode.commands.executeCommand('svn.status');
 }
 
 // this method is called when your extension is deactivated
