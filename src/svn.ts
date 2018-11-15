@@ -65,4 +65,14 @@ export class SVN {
         });
     }
 
+    public commit(commitFiles: string[], message: string, resultCallBack: (result: string) => void): void {
+        let files: string = '';
+        for(let file of commitFiles){
+            files += file + ' ';
+        }
+        executeSVNCommand(['commit', '-m', message, files], (result: number, data: String) => {
+            resultCallBack(`result: ${data}`);
+        });
+    }
+
 }

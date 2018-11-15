@@ -13,11 +13,13 @@
         "*"
     ],
     "main": "./out/extension",
+    "enableProposedApi": true,
     "contributes": {
         "commands": [
             {
                 "command": "svn.status",
                 "title": "status",
+                "category": "SVN",
                 "icon": {
                     "light": "resources/icons/light/refresh.svg",
                     "dark": "resources/icons/dark/refresh.svg"
@@ -26,14 +28,25 @@
             {
                 "command": "svn.addCommit",
                 "title": "add",
+                "category": "SVN",
                 "icon": {
                     "light": "resources/icons/light/stage.svg",
                     "dark": "resources/icons/dark/stage.svg"
                 }
             },
             {
+                "command": "svn.removeCommit",
+                "title": "revert",
+                "category": "SVN",
+                "icon": {
+                    "light": "resources/icons/light/unstage.svg",
+                    "dark": "resources/icons/dark/unstage.svg"
+                }
+            },
+            {
                 "command": "svn.commit",
                 "title": "commit",
+                "category": "SVN",
                 "icon": {
                     "light": "resources/icons/light/check.svg",
                     "dark": "resources/icons/dark/check.svg"
@@ -42,9 +55,19 @@
             {
                 "command": "svn.update",
                 "title": "update",
+                "category": "SVN",
                 "icon": {
                     "light": "resources/icons/light/check.svg",
                     "dark": "resources/icons/dark/check.svg"
+                }
+            },
+            {
+                "command": "svn.openChange",
+                "title": "change",
+                "category": "SNV",
+                "icon": {
+                    "light": "resources/icons/light/open-change.svg",
+                    "dark": "resources/icons/dark/open-change.svg"
                 }
             }
         ],
@@ -71,12 +94,22 @@
                     "command": "svn.addCommit",
                     "when": "scmProvider == svn && scmResourceGroup == change_file",
                     "group": "inline"
+                },
+                {
+                    "command": "svn.removeCommit",
+                    "when": "scmProvider == svn && scmResourceGroup == commit_file",
+                    "group": "inline"
                 }
             ],
             "scm/resourceState/context": [
                 {
                     "command": "svn.addCommit",
                     "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
+                },
+                {
+                    "command": "svn.removeCommit",
+                    "when": "scmProvider == svn && scmResourceGroup == commit_file",
                     "group": "inline"
                 }
             ]
