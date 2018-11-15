@@ -1,27 +1,57 @@
 'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+import * as svn from './svn';
+
 export function activate(context: vscode.ExtensionContext) {
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "svn" is now active!');
+    const outputChannel = vscode.window.createOutputChannel('SVN');
+	outputChannel.show();
+	context.subscriptions.push(outputChannel);
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
+    const svnSCM = vscode.scm.createSourceControl("svn", "SVN");
+    const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
+    const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
+    let rootPath = vscode.workspace.rootPath;
+    if(rootPath === undefined){
+        console.log('workspace root path is undefined.');
+        return;
+    }
+    const curSvn = new svn.SVN(rootPath);
+    curSvn.status((result: svn.SVNStatusResult) => {
+        let commitFiles: vscode.SourceControlResourceState[] = [];
+        let changeFiles: vscode.SourceControlResourceState[] = [];
+        for(let file of result.files){
+            if(file.status === 'modified'){
+                if(file.willCommit){
+                    commitFiles.push({
+                        resourceUri: vscode.Uri.file(file.filePath)
+                    });
+                }else{
+                    changeFiles.push({
+                        resourceUri: vscode.Uri.file(file.filePath)
+                    });
+                }
+            }
+        }
+        commitResourceGroup.resourceStates = commitFiles;
+        changeResourceGroup.resourceStates = changeFiles;
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(vscode.commands.registerCommand("svn.addCommit", (...args: any[]) => {
+        let obj = args[0];
+        console.log(obj);
+        if(obj.resourceUri){
+
+        }else{
+            let objs = obj._resourceStates;
+            for(let st of objs){
+
+            }
+        }
+    }));
+    
 }
 
 // this method is called when your extension is deactivated

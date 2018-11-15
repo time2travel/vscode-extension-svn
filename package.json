@@ -10,16 +10,77 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "*"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "svn.status",
+                "title": "status",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
+                }
+            },
+            {
+                "command": "svn.addCommit",
+                "title": "add",
+                "icon": {
+                    "light": "resources/icons/light/stage.svg",
+                    "dark": "resources/icons/dark/stage.svg"
+                }
+            },
+            {
+                "command": "svn.commit",
+                "title": "commit",
+                "icon": {
+                    "light": "resources/icons/light/check.svg",
+                    "dark": "resources/icons/dark/check.svg"
+                }
+            },
+            {
+                "command": "svn.update",
+                "title": "update",
+                "icon": {
+                    "light": "resources/icons/light/check.svg",
+                    "dark": "resources/icons/dark/check.svg"
+                }
             }
-        ]
+        ],
+        "menus": {
+            "scm/title": [
+                {
+                    "command": "svn.status",
+                    "when": "scmProvider == svn",
+                    "group": "navigation"
+                },
+                {
+                    "command": "svn.commit",
+                    "when": "scmProvider == svn",
+                    "group": "navigation"
+                },
+                {
+                    "command": "svn.update",
+                    "when": "scmProvider == svn",
+                    "group": "navigation"
+                }
+            ],
+            "scm/resourceGroup/context": [
+                {
+                    "command": "svn.addCommit",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
+                }
+            ],
+            "scm/resourceState/context": [
+                {
+                    "command": "svn.addCommit",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
+                }
+            ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -34,5 +95,9 @@
         "tslint": "^5.8.0",
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "@types/xml2js": "^0.4.3",
+        "xml2js": "^0.4.19"
     }
 }
