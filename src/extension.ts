@@ -133,6 +133,25 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(openFile, originalFile);
         vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(originalFile ? originalFile:''), vscode.Uri.file(openFile), `${openFileName}(base<-->workcopy)`);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand("svn.showBlame", (...args: any[]) => {
+        let editor = vscode.window.activeTextEditor;
+        if(!editor){
+            return;
+        }
+
+        let selectLineNumber =  editor.selection.anchor.line + 1;
+        let editFile = editor.document.fileName;
+
+        globalSVN.blame(editFile, selectLineNumber, (result: string, revision: string) => {
+            vscode.window.setStatusBarMessage(result);
+            const blameMsg = result;
+            globalSVN.log(editFile, revision, (result: string) => {
+                vscode.window.setStatusBarMessage(blameMsg + " >>commit message:" + result);
+            });
+        });
+        
+    }));
     
     vscode.commands.executeCommand('svn.status');
 }

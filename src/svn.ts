@@ -81,4 +81,43 @@ export class SVN {
         });
     }
 
+    public blame(editFile: string, selectLine: number, resultCallBack: (result: string, revision: string) => void): void {
+        executeSVNCommand(['blame', '--xml', editFile], (result: number, data: String) => {
+            try {
+                xml2js.parseString(data, (err: any, result: any) => {
+                    let blameEntry = result.blame.target[0].entry;
+                    for(let blame of blameEntry){
+                        let lineNumber = Number(blame["$"]["line-number"]);
+                        if(lineNumber === selectLine){
+                            let commit = blame.commit[0];
+                            let revision = commit["$"]["revision"];
+                            let author = commit.author[0];
+                            let date = commit.date[0];
+                            
+                            let commitInfo = `line ${lineNumber} commit by ${author} on ${date}, revision:${revision}`;
+
+                            resultCallBack(commitInfo, revision);
+                            return;
+                        }
+                    }
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    public log(editFile: string, revision: string, resultCallBack: (result: string) => void): void {
+        executeSVNCommand(['log', '--xml', `-r${revision}`, editFile], (result: number, data: String) => {
+            try {
+                xml2js.parseString(data, (err: any, result: any) => {
+                    let msg = result.log.logentry[0].msg[0];
+                    resultCallBack(msg);
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        });
+    }
+
 }

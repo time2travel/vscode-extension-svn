@@ -1,7 +1,7 @@
 {
     "name": "svn",
     "displayName": "svn",
-    "description": "svn for vscode.",
+    "description": "simple svn implements for vscode.",
     "publisher": "Tianwu",
     "version": "0.0.1",
     "engines": {
@@ -70,6 +70,11 @@
                     "light": "resources/icons/light/open-change.svg",
                     "dark": "resources/icons/dark/open-change.svg"
                 }
+            },
+            {
+                "command": "svn.showBlame",
+                "title": "SVN Blame",
+                "category": "SVN"
             }
         ],
         "menus": {
@@ -112,6 +117,12 @@
                     "command": "svn.removeCommit",
                     "when": "scmProvider == svn && scmResourceGroup == commit_file",
                     "group": "inline"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "svn.showBlame",
+                    "group": "navigation"
                 }
             ]
         }
