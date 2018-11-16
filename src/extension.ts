@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 
 import * as svn from './svn';
 import { SVNQuickDiffProvider } from './svnQuickDiffProvider';
-import { open } from 'inspector';
 
 // import * as svnDiff from './svnQuickDiffProvider';
 
