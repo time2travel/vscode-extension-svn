@@ -97,9 +97,10 @@ export function activate(context: vscode.ExtensionContext) {
             changeResourceGroup.resourceStates = changeFiles;
         }else{
             let objs = obj._resourceStates;
-            for(let st of objs){
+            console.log(objs);
+            // for(let st of objs){
 
-            }
+            // }
         }
     }));
 
@@ -120,9 +121,10 @@ export function activate(context: vscode.ExtensionContext) {
             changeResourceGroup.resourceStates = changeFiles;
         }else{
             let objs = obj._resourceStates;
-            for(let st of objs){
+            console.log(objs);
+            // for(let st of objs){
                 
-            }
+            // }
         }
     }));
 
