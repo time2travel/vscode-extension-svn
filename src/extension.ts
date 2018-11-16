@@ -2,6 +2,8 @@
 import * as vscode from 'vscode';
 
 import * as svn from './svn';
+import { SVNQuickDiffProvider } from './svnQuickDiffProvider';
+import { open } from 'inspector';
 
 // import * as svnDiff from './svnQuickDiffProvider';
 
@@ -15,13 +17,12 @@ export function activate(context: vscode.ExtensionContext) {
     const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
     const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
 
-    // svnSCM.quickDiffProvider = new svnDiff.SVNQuickDiffProvider();
-
     let rootPath = vscode.workspace.rootPath;
     if(rootPath === undefined){
         console.log('workspace root path is undefined.');
         return;
     }
+    const diffProvider = new SVNQuickDiffProvider(rootPath);
     const globalSVN = new svn.SVN(rootPath);
     
     context.subscriptions.push(vscode.commands.registerCommand("svn.status", (...args: any[]) => {
@@ -125,10 +126,12 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand("svn.openChange", (...args: any[]) => {
-        console.log(args);
-        vscode.commands.executeCommand('vscode.open', args[0]).then();
-        // vscode.commands.executeCommand('vscode.diff', args[0], args[0]);
+    context.subscriptions.push(vscode.commands.registerCommand("svn.openChange", async (...args: any[]) => {
+        let openFile: string = args[0];
+        let openFileName = openFile.split("/")[openFile.split("/").length-1];   //不熟悉js基础库，就先这样吧。
+        let originalFile = await diffProvider.getSVNBaseFile(openFile);
+        console.log(openFile, originalFile);
+        vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(originalFile ? originalFile:''), vscode.Uri.file(openFile), `${openFileName}(base<-->workcopy)`);
     }));
     
     vscode.commands.executeCommand('svn.status');
