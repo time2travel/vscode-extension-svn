@@ -6,15 +6,11 @@ import { SVNQuickDiffProvider } from './svnQuickDiffProvider';
 
 // import * as svnDiff from './svnQuickDiffProvider';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
     const outputChannel = vscode.window.createOutputChannel('SVN');
 	outputChannel.show();
 	context.subscriptions.push(outputChannel);
-
-    const svnSCM = vscode.scm.createSourceControl("svn", "SVN");
-    const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
-    const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
 
     let rootPath = vscode.workspace.rootPath;
     if(rootPath === undefined){
@@ -23,6 +19,15 @@ export function activate(context: vscode.ExtensionContext) {
     }
     const diffProvider = new SVNQuickDiffProvider(rootPath);
     const globalSVN = new svn.SVN(rootPath);
+
+    let loadSVN = await globalSVN.svnDirCheck();
+    if(!loadSVN){
+        console.log("this is not a svn dir.");
+        return;
+    }
+    const svnSCM = vscode.scm.createSourceControl("svn", "SVN");
+    const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
+    const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
     
     context.subscriptions.push(vscode.commands.registerCommand("svn.status", (...args: any[]) => {
         globalSVN.status((result: svn.SVNStatusResult) => {
