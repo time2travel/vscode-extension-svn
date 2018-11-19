@@ -4,8 +4,6 @@ import * as vscode from 'vscode';
 import * as svn from './svn';
 import { SVNQuickDiffProvider } from './svnQuickDiffProvider';
 
-// import * as svnDiff from './svnQuickDiffProvider';
-
 export async function activate(context: vscode.ExtensionContext) {
 
     const outputChannel = vscode.window.createOutputChannel('SVN');

@@ -57,8 +57,8 @@
                 "title": "update",
                 "category": "SVN",
                 "icon": {
-                    "light": "resources/icons/light/check.svg",
-                    "dark": "resources/icons/dark/check.svg"
+                    "light": "resources/icons/light/update.svg",
+                    "dark": "resources/icons/dark/update.svg"
                 }
             },
             {
