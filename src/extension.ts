@@ -71,6 +71,9 @@ export async function activate(context: vscode.ExtensionContext) {
         console.log(message);
         globalSVN.commit(commitFilesPath, message, (result: string) => {
             console.log(result);
+            outputChannel.append(result);
+            let resultLines = result.split("\n");
+            vscode.window.showWarningMessage(resultLines[resultLines.length-2]);
             vscode.commands.executeCommand('svn.status');
         });
     }));
@@ -78,6 +81,9 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand("svn.update", (...args: any[]) => {
         globalSVN.update((result: string) => {
             console.log(result);
+            outputChannel.append(result);
+            let resultLines = result.split("\n");
+            vscode.window.showWarningMessage(resultLines[resultLines.length-2]);
             vscode.commands.executeCommand('svn.status');
         });
     }));
