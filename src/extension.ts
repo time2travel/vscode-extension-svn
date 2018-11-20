@@ -16,7 +16,8 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
     }
     const diffProvider = new SVNQuickDiffProvider(rootPath);
-    const globalSVN = new svn.SVN(rootPath);
+    let svnRootPath = await svn.SVN.svnRootPath(rootPath);
+    const globalSVN = new svn.SVN(svnRootPath?svnRootPath:'');
 
     let loadSVN = await globalSVN.svnDirCheck();
     if(!loadSVN){

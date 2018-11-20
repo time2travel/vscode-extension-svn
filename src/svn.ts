@@ -35,6 +35,20 @@ export class SVN {
         this.rootPath = rootPath;
     }
 
+    public static async svnRootPath(path: string): Promise<string|undefined> {
+        let p = new Promise<string|undefined>((resolve, reject) => {
+            executeSVNCommand(['info', '--show-item', 'wc-root', path], (result: number, data: String) => {
+                let resultInfo = data.search("W155007:");
+                if(resultInfo >= 0){
+                    resolve();
+                }else{
+                    resolve(data.toString().replace("\n", ""));
+                }
+            });
+        });
+        return await p;
+    }
+
     public async svnDirCheck(): Promise<boolean> {
         let p = new Promise<boolean>((resolve, reject) => {
             executeSVNCommand(['status', this.rootPath], (result: number, data: String) => {
