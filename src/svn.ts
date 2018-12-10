@@ -4,10 +4,10 @@ import * as cp from 'child_process';
 import * as xml2js from 'xml2js';
 
 
-function executeShellCommand(shellCmd: string, args: string[]|null, resultCallBack: (result: number, data: String) => void): void {
+function executeShellCommand(shellCmd: string, args: string[] | null, resultCallBack: (result: number, data: String) => void): void {
 
     const buffers: Buffer[] = [];
-    let child = cp.spawn(shellCmd, args?args:[]);
+    let child = cp.spawn(shellCmd, args ? args : []);
     child.stdout.on('data', (data: Buffer) => {
         buffers.push(data);
     });
@@ -20,28 +20,28 @@ function executeShellCommand(shellCmd: string, args: string[]|null, resultCallBa
     });
 }
 
-function executeSVNCommand(args: string[]|null, resultCallBack: (result: number, data: String) => void): void{
+function executeSVNCommand(args: string[] | null, resultCallBack: (result: number, data: String) => void): void {
     executeShellCommand('svn', args, resultCallBack);
 }
 
-export interface SVNStatusResult{
+export interface SVNStatusResult {
     rootPath: string;
-    files:{filePath: string, status: string, willCommit: boolean}[];
+    files: { filePath: string, status: string}[];
 }
 
 export class SVN {
     private rootPath = './';
-    constructor(rootPath: string){
+    constructor(rootPath: string) {
         this.rootPath = rootPath;
     }
 
-    public static async svnRootPath(path: string): Promise<string|undefined> {
-        let p = new Promise<string|undefined>((resolve, reject) => {
+    public static async svnRootPath(path: string): Promise<string | undefined> {
+        let p = new Promise<string | undefined>((resolve, reject) => {
             executeSVNCommand(['info', '--show-item', 'wc-root', path], (result: number, data: String) => {
                 let resultInfo = data.search("W155007:");
-                if(resultInfo >= 0){
+                if (resultInfo >= 0) {
                     resolve();
-                }else{
+                } else {
                     resolve(data.toString().replace("\n", ""));
                 }
             });
@@ -53,9 +53,9 @@ export class SVN {
         let p = new Promise<boolean>((resolve, reject) => {
             executeSVNCommand(['status', this.rootPath], (result: number, data: String) => {
                 let resultInfo = data.search("W155007:");
-                if(resultInfo >= 0){
+                if (resultInfo >= 0) {
                     resolve(false);
-                }else{
+                } else {
                     resolve(true);
                 }
             });
@@ -76,17 +76,16 @@ export class SVN {
                     let target = result.status.target[0];
                     let path = target["$"].path;
                     let entry = target.entry;
-                    
+
                     let returnResult: SVNStatusResult = {
                         rootPath: path,
                         files: []
                     };
 
-                    for(let obj of entry){
+                    for (let obj of entry) {
                         returnResult.files.push({
                             filePath: obj["$"].path,
-                            status: obj["wc-status"][0]["$"].item,
-                            willCommit: false
+                            status: obj["wc-status"][0]["$"].item
                         });
                     }
 
@@ -101,7 +100,7 @@ export class SVN {
 
     public commit(commitFiles: string[], message: string, resultCallBack: (result: string) => void): void {
         let args = ['commit', '-m', message];
-        for(let file of commitFiles){
+        for (let file of commitFiles) {
             args.push(file);
         }
         executeSVNCommand(args, (result: number, data: String) => {
@@ -114,14 +113,14 @@ export class SVN {
             try {
                 xml2js.parseString(data, (err: any, result: any) => {
                     let blameEntry = result.blame.target[0].entry;
-                    for(let blame of blameEntry){
+                    for (let blame of blameEntry) {
                         let lineNumber = Number(blame["$"]["line-number"]);
-                        if(lineNumber === selectLine){
+                        if (lineNumber === selectLine) {
                             let commit = blame.commit[0];
                             let revision = commit["$"]["revision"];
                             let author = commit.author[0];
                             let date = commit.date[0];
-                            
+
                             let commitInfo = `line ${lineNumber} commit by ${author} on ${date}, revision:${revision}`;
 
                             resultCallBack(commitInfo, revision);
