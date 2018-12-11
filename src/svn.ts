@@ -38,8 +38,8 @@ export class SVN {
     public static async svnRootPath(path: string): Promise<string | undefined> {
         let p = new Promise<string | undefined>((resolve, reject) => {
             executeSVNCommand(['info', '--show-item', 'wc-root', path], (result: number, data: String) => {
-                let resultInfo = data.search("W155007:");
-                if (resultInfo >= 0) {
+                let resultInfo = data.startsWith("svn:");
+                if (resultInfo) {
                     resolve();
                 } else {
                     resolve(data.toString().replace("\n", ""));
