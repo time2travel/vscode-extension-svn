@@ -8,5 +8,8 @@ just test for myself. please don't install it!!!
 
 ## Release
 
-bug fix.
-add file status support.
+### 0.0.15
+* bug fix.
+### 0.0.14
+* bug fix.
+* add file status support.
