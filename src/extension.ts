@@ -20,8 +20,15 @@ export async function activate(context: vscode.ExtensionContext) {
         console.log('workspace root path is undefined.');
         return;
     }
+
     const diffProvider = new SVNQuickDiffProvider(rootPath);
     let svnRootPath = await svn.SVN.svnRootPath(rootPath);
+
+    if(svnRootPath === undefined || svnRootPath.length <= 0){
+        console.log("this path not a svn dir.");
+        return;
+    }
+    
     const globalSVN = new svn.SVN(svnRootPath ? svnRootPath : '');
 
     // let loadSVN = await globalSVN.svnDirCheck();
@@ -34,6 +41,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
     const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
 
+    svnSCM.inputBox.placeholder = "input commit message here.";
     const outputChannel = vscode.window.createOutputChannel('SVN');
     outputChannel.show();
     context.subscriptions.push(outputChannel);
@@ -88,7 +96,7 @@ export async function activate(context: vscode.ExtensionContext) {
         for (let file of commitFiles) {
             commitFilesPath.push(file.resourceUri.path);
         }
-        let message = svnSCM.inputBox.value.toString();
+        let message = svnSCM.inputBox.value;
         console.log(message);
         if (message.length <= 0) {
             vscode.window.showErrorMessage("no commit message ! ! !");

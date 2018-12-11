@@ -9,3 +9,4 @@ just test for myself. please don't install it!!!
 ## Release
 
 bug fix.
+add file status support.
