@@ -44,6 +44,15 @@
                 }
             },
             {
+                "command": "svn.revert",
+                "title": "revert",
+                "category": "SVN",
+                "icon": {
+                    "light": "resources/icons/light/refresh.svg",
+                    "dark": "resources/icons/dark/refresh.svg"
+                }
+            },
+            {
                 "command": "svn.commit",
                 "title": "commit",
                 "category": "SVN",
@@ -104,6 +113,11 @@
                     "command": "svn.removeCommit",
                     "when": "scmProvider == svn && scmResourceGroup == commit_file",
                     "group": "inline"
+                },
+                {
+                    "command": "svn.revert",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
                 }
             ],
             "scm/resourceState/context": [
@@ -115,6 +129,11 @@
                 {
                     "command": "svn.removeCommit",
                     "when": "scmProvider == svn && scmResourceGroup == commit_file",
+                    "group": "inline"
+                },
+                {
+                    "command": "svn.revert",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
                     "group": "inline"
                 }
             ],

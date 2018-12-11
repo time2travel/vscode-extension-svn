@@ -98,6 +98,16 @@ export class SVN {
         });
     }
 
+    public revert(commitFiles: string[], resultCallBack: (result: string) => void): void {
+        let args = ['revert'];
+        for(let file in commitFiles) {
+            args.push(file);
+        }
+        executeSVNCommand(args, (result: number, data: String) => {
+            resultCallBack(`${data}`);
+        });
+    }
+
     public commit(commitFiles: string[], message: string, resultCallBack: (result: string) => void): void {
         let args = ['commit', '-m', message];
         for (let file of commitFiles) {

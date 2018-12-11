@@ -24,11 +24,12 @@ export async function activate(context: vscode.ExtensionContext) {
     let svnRootPath = await svn.SVN.svnRootPath(rootPath);
     const globalSVN = new svn.SVN(svnRootPath ? svnRootPath : '');
 
-    let loadSVN = await globalSVN.svnDirCheck();
-    if (!loadSVN) {
-        console.log("this is not a svn dir.");
-        return;
-    }
+    // let loadSVN = await globalSVN.svnDirCheck();
+    // if (!loadSVN) {
+    //     console.log("this is not a svn dir.");
+    //     return;
+    // }
+    
     const svnSCM = vscode.scm.createSourceControl("svn", "SVN");
     const commitResourceGroup = svnSCM.createResourceGroup("commit_file", "commit files");
     const changeResourceGroup = svnSCM.createResourceGroup("change_file", "change files");
@@ -134,6 +135,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
             // }
         }
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand("svn.revert", (...args: any[]) => {
+        let openFile: string = args[0];
+        console.log(openFile);
+        globalSVN.revert([openFile], (result: string) => {
+            console.log(result);
+            outputChannel.append(result);
+            let resultLines = result.split("\n");
+            vscode.window.showWarningMessage(resultLines[resultLines.length - 2]);
+            vscode.commands.executeCommand('svn.status');
+        });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("svn.removeCommit", (...args: any[]) => {
