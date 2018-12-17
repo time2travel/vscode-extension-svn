@@ -183,11 +183,13 @@ export class SVNSCM {
         return (...args: any[]) => {
             let obj = args[0];
             console.log(obj);
+
             for(let file of that.changeFiles){
-                if(file.filePath === obj){
+                if(file.filePath === obj.resourceUri.path){
                     file.isCommit = true;
                 }
             }
+
             that.updateSCRStates(that.changeFiles);
         };
     }
@@ -221,11 +223,13 @@ export class SVNSCM {
         return (...args: any[]) => {
             let obj = args[0];
             console.log(obj);
+
             for(let file of that.changeFiles){
-                if(file.filePath === obj){
+                if(file.filePath === obj.resourceUri.path){
                     file.isCommit = false;
                 }
             }
+
             that.updateSCRStates(that.changeFiles);
         };
     }
