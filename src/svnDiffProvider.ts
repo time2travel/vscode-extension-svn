@@ -1,17 +1,14 @@
 
-import * as vscode from 'vscode';
 import * as sqlite3 from 'sqlite3';
 import * as fs from 'fs';
 
-export class SVNQuickDiffProvider implements vscode.QuickDiffProvider {
+import * as path from 'path';
+
+
+export class SVNDiffProvider{
     private rootPath?: string;
     constructor(rootPath: string) {
         this.rootPath = rootPath;
-    }
-
-    provideOriginalResource(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Uri> {
-        let originalResource = "";//this.getSVNBaseFile(uri.path).then();
-        return vscode.Uri.file(originalResource ? originalResource : '');
     }
 
     async getSVNBaseFile(file: string): Promise<string | undefined> {
@@ -29,7 +26,7 @@ export class SVNQuickDiffProvider implements vscode.QuickDiffProvider {
         let svnDbResult = await this.dbSelect(sql, svnDb);
 
         console.log(svnDbResult);
-        let fileExname = filePath.split(".")[filePath.split(".").length - 1];
+        let fileExname = path.extname(filePath);
         let svnOriginalTmpFile = `${this.rootPath}/.svn/tmp/tmp_diff.${fileExname}`;
         if (svnDbResult) {
             let filesha1 = svnDbResult.substring(6);

@@ -2,6 +2,8 @@
 
 import * as cp from 'child_process';
 import * as xml2js from 'xml2js';
+import * as path from 'path';
+import { SVNFile, SVNFileStatus } from './svnFile';
 
 
 function executeShellCommand(shellCmd: string, args: string[] | null, resultCallBack: (result: number, data: String) => void): void {
@@ -24,13 +26,11 @@ function executeSVNCommand(args: string[] | null, resultCallBack: (result: numbe
     executeShellCommand('svn', args, resultCallBack);
 }
 
-export interface SVNStatusResult {
-    rootPath: string;
-    files: { filePath: string, status: string}[];
-}
-
 export class SVN {
     private rootPath = './';
+
+    private svnFiles: SVNFile[] = [];
+
     constructor(rootPath: string) {
         this.rootPath = rootPath;
     }
@@ -49,72 +49,85 @@ export class SVN {
         return await p;
     }
 
-    public async svnDirCheck(): Promise<boolean> {
-        let p = new Promise<boolean>((resolve, reject) => {
-            executeSVNCommand(['status', this.rootPath], (result: number, data: String) => {
-                let resultInfo = data.search("W155007:");
-                if (resultInfo >= 0) {
-                    resolve(false);
-                } else {
-                    resolve(true);
-                }
-            });
-        });
-        return await p;
-    }
-
     public update(resultCallBack: (result: string) => void): void {
         executeSVNCommand(['update', this.rootPath], (result: number, data: String) => {
             resultCallBack(`${data}`);
         });
     }
 
-    public status(resultCallBack: (result: SVNStatusResult) => void): void {
+    public status(resultCallBack: (result: SVNFile[]) => void): void {
         executeSVNCommand(['status', '--xml', this.rootPath], (result: number, data: String) => {
             try {
                 xml2js.parseString(data, (err: any, result: any) => {
                     let target = result.status.target[0];
-                    let path = target["$"].path;
                     let entry = target.entry;
 
-                    let returnResult: SVNStatusResult = {
-                        rootPath: path,
-                        files: []
-                    };
-
-                    for (let obj of entry) {
-                        returnResult.files.push({
-                            filePath: obj["$"].path,
-                            status: obj["wc-status"][0]["$"].item
+                    this.svnFiles = [];
+                    for (let file of entry) {
+                        this.svnFiles.push({
+                            fileName: path.basename(file["$"].path),
+                            filePath: file["$"].path,
+                            fileStatus: file["wc-status"][0]["$"].item,
+                            isCommit: false
                         });
                     }
-
-                    resultCallBack(returnResult);
-
                 });
             } catch (error) {
                 console.log(error);
+            } finally{
+                resultCallBack(this.svnFiles);
             }
         });
     }
 
-    public revert(commitFiles: string[], resultCallBack: (result: string) => void): void {
+    public revert(commitFiles: SVNFile[], resultCallBack: (result: string) => void): void {
         let args = ['revert'];
-        for(let file in commitFiles) {
-            args.push(file);
+        for(let file of commitFiles) {
+            args.push(file.filePath);
         }
         executeSVNCommand(args, (result: number, data: String) => {
             resultCallBack(`${data}`);
         });
     }
 
-    public commit(commitFiles: string[], message: string, resultCallBack: (result: string) => void): void {
+    public async commit(commitFiles: SVNFile[], message: string, resultCallBack: (result: string) => void): Promise<void> {
+        let unversionedFiles: SVNFile[] = [];
+        for(let file of commitFiles){
+            if(file.fileStatus === SVNFileStatus.Unversioned){
+                unversionedFiles.push(file);
+            }
+        }
+        let filesAddResult: String;
+        if(unversionedFiles.length > 0){
+            await this.add(unversionedFiles, (result: number, data: String) => {
+                filesAddResult = `${data}`;
+            });
+        }
+
         let args = ['commit', '-m', message];
         for (let file of commitFiles) {
-            args.push(file);
+            args.push(file.filePath);
         }
         executeSVNCommand(args, (result: number, data: String) => {
-            resultCallBack(`result: ${data}`);
+            resultCallBack(`result: \n ${filesAddResult} \n ${data}`);
+        });
+    }
+
+    public add(addFiles: SVNFile[], resultCallBack: (result: number, data: String) => void): void {
+        if(addFiles.length <= 0){
+            console.log("add file is empty.");
+            return;
+        }
+        let args = ['add'];
+        for(let file of addFiles){
+            if(file.fileStatus === SVNFileStatus.Unversioned){
+                args.push(file.filePath);
+            }else{
+                console.log(`file: ${file.fileName} already added.`);
+            }
+        }
+        executeSVNCommand(args, (result: number, data: String) => {
+            resultCallBack(result, data);
         });
     }
 
