@@ -7,7 +7,9 @@ simple svn implements for vscode.
 just test for myself. please don't install it!!!
 
 ## Release
-
+### 0.0.23
+* add revert support.
+* bug fix.
 ### 0.0.21
 * bug fix.
 ### 0.0.15

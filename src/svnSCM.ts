@@ -197,7 +197,7 @@ export class SVNSCM {
     private revert(){
         let that = this;
         return (...args: any[]) => {
-            let openFilePath: string = args[0];
+            let openFilePath: string = args[0].resourceUri.path;
             console.log(openFilePath);
             let file: SVNFile|null = null;
             for(let f of that.changeFiles){

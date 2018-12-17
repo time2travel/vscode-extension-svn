@@ -81,7 +81,7 @@ export class SVN {
     }
 
     public revert(commitFiles: SVNFile[], resultCallBack: (result: string) => void): void {
-        let args = ['revert'];
+        let args = ['revert', '-R'];
         for(let file of commitFiles) {
             args.push(file.filePath);
         }
