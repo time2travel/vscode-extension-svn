@@ -164,5 +164,6 @@
         "@types/xml2js": "^0.4.3",
         "sqlite3": "^4.0.4",
         "xml2js": "^0.4.19"
-    }
+    },
+    "repository": "https://github.com/time2travel/vscode-extension-svn.git"
 }
