@@ -263,8 +263,8 @@ export class SVNSCM {
                 vscode.window.setStatusBarMessage(result);
                 const blameMsg = result;
                 that.globalSVN.log(editFile, revision, (result: string) => {
-                    that.outputChannel.append(`${blameMsg} \n>> commit message:\n${result}`);
-                    result = result.replace("\n", "\t");
+                    that.outputChannel.append(`\n**********\n${blameMsg} \n>> commit message:\n${result}\n**********\n`);
+                    result = result.replace("\n", "");
                     vscode.window.setStatusBarMessage(blameMsg + " >>commit message:" + result);
                 });
             });
