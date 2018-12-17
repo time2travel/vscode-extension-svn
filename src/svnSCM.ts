@@ -15,6 +15,7 @@ function getIconUri(iconName: string, theme: string): vscode.Uri {
 	return vscode.Uri.file(path.join(iconsRootPath, theme, `${iconName}.svg`));
 }
 
+
 export class SVNSCM {
     private rootPath: string;
 
@@ -56,14 +57,14 @@ export class SVNSCM {
     }
 
     private registerAllCommand() {
-        vscode.commands.registerCommand("svn.status", this.status);
-        vscode.commands.registerCommand("svn.commit", this.commit);
-        vscode.commands.registerCommand("svn.update", this.update);
-        vscode.commands.registerCommand("svn.addCommit", this.addCommit);
-        vscode.commands.registerCommand("svn.revert", this.revert);
-        vscode.commands.registerCommand("svn.removeCommit", this.removeCommit);
-        vscode.commands.registerCommand("svn.openChange", this.openChange);
-        vscode.commands.registerCommand("svn.showBlame", this.showBlame);
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.status", this.status()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.commit", this.commit()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.update", this.update()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.addCommit", this.addCommit()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.revert", this.revert()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.removeCommit", this.removeCommit()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.openChange", this.openChange()));
+        this.extensionContext.subscriptions.push(vscode.commands.registerCommand("svn.showBlame", this.showBlame()));
     }
 
     private icoName(file: SVNFile): string{
@@ -127,118 +128,142 @@ export class SVNSCM {
         this.changeResourceGroup.resourceStates = this.createSCRStates(changeFiles);
     }
 
-    private status(...args: any[]){
-        this.globalSVN.status((result: SVNFile[]) => {
-            this.changeFiles = result;
-            this.updateSCRStates(this.changeFiles);
-        });
-    }
-
-    private commit(...args: any[]){
-        let commitFiles: SVNFile[] = [];
-        for(let file of this.changeFiles){
-            if(file.isCommit){
-                commitFiles.push(file);
-            }
-        }
-
-        let message = this.svnSCM.inputBox.value;
-        console.log(message);
-        if (message.length <= 0) {
-            vscode.window.showErrorMessage("no commit message ! ! !");
-            return;
-        }
-
-        this.globalSVN.commit(commitFiles, message, (result: string) => {
-            console.log(result);
-            this.outputChannel.append(result);
-            let resultLines = result.replace("\n", "").trimRight();
-            vscode.window.showWarningMessage(resultLines);
-            vscode.commands.executeCommand('svn.status');
-        });
-    }
-
-    private update(...args: any[]){
-        this.globalSVN.update((result: string) => {
-            console.log(result);
-            this.outputChannel.append(result);
-            let resultLines = result.replace("\n", "").trimRight();
-            vscode.window.showWarningMessage(resultLines);
-            vscode.commands.executeCommand('svn.status');
-        });
-    }
-
-    private addCommit(...args: any[]){
-        let obj = args[0];
-        console.log(obj);
-        for(let file of this.changeFiles){
-            if(file.filePath === obj){
-                file.isCommit = true;
-            }
-        }
-        this.updateSCRStates(this.changeFiles);
-    }
-
-    private revert(...args: any[]){
-        let openFilePath: string = args[0];
-        console.log(openFilePath);
-        let file: SVNFile|null = null;
-        for(let f of this.changeFiles){
-            if(f.filePath === openFilePath){
-                file = f;
-            }
-        }
-        if(file === null){
-            return;
-        }
-        this.globalSVN.revert([file], (result: string) => {
-            console.log(result);
-            this.outputChannel.append(result);
-            let resultLines = result.replace("\n", "").trimRight();
-            vscode.window.showWarningMessage(resultLines);
-            vscode.commands.executeCommand('svn.status');
-        });
-    }
-
-    private removeCommit(...args: any[]){
-        let obj = args[0];
-        console.log(obj);
-        for(let file of this.changeFiles){
-            if(file.filePath === obj){
-                file.isCommit = false;
-            }
-        }
-        this.updateSCRStates(this.changeFiles);
-    }
-
-    private async openChange(...args: any[]){
-        let openFile: string = args[0];
-        let openFileName = path.basename(openFile);
-        let originalFile = await this.diffProvider.getSVNBaseFile(openFile);
-        console.log(openFile, originalFile);
-        vscode.commands.executeCommand('vscode.diff', 
-                                       vscode.Uri.file(originalFile ? originalFile : ''), 
-                                       vscode.Uri.file(openFile), 
-                                       `${openFileName}(base<-->workcopy)`);
-    }
-
-    private showBlame(...args: any[]){
-        let editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-
-        let selectLineNumber = editor.selection.anchor.line + 1;
-        let editFile = editor.document.fileName;
-
-        this.globalSVN.blame(editFile, selectLineNumber, (result: string, revision: string) => {
-            vscode.window.setStatusBarMessage(result);
-            const blameMsg = result;
-            this.globalSVN.log(editFile, revision, (result: string) => {
-                this.outputChannel.append(`${blameMsg} \n>> commit message:\n${result}`);
-                result = result.replace("\n", "\t");
-                vscode.window.setStatusBarMessage(blameMsg + " >>commit message:" + result);
+    private status(){
+        let that = this;
+        return (...args: any[]) => {
+            that.globalSVN.status((result: SVNFile[]) => {
+                that.changeFiles = result;
+                that.updateSCRStates(that.changeFiles);
             });
-        });
+        };
+    }
+
+    private commit(){
+        let that = this;
+        return (...args: any[]) => {
+            let commitFiles: SVNFile[] = [];
+            for(let file of that.changeFiles){
+                if(file.isCommit){
+                    commitFiles.push(file);
+                }
+            }
+
+            let message = that.svnSCM.inputBox.value;
+            console.log(message);
+            if (message.length <= 0) {
+                vscode.window.showErrorMessage("no commit message ! ! !");
+                return;
+            }
+
+            that.globalSVN.commit(commitFiles, message, (result: string) => {
+                console.log(result);
+                that.outputChannel.append(result);
+                let resultLines = result.replace("\n", "").trimRight();
+                vscode.window.showWarningMessage(resultLines);
+                vscode.commands.executeCommand('svn.status');
+            });
+        };
+    }
+
+    private update(){
+        let that = this;
+        return (...args: any[]) => {
+            that.globalSVN.update((result: string) => {
+                console.log(result);
+                that.outputChannel.append(result);
+                let resultLines = result.replace("\n", "").trimRight();
+                vscode.window.showWarningMessage(resultLines);
+                vscode.commands.executeCommand('svn.status');
+            });
+        };
+    }
+
+    private addCommit(){
+        let that = this;
+        return (...args: any[]) => {
+            let obj = args[0];
+            console.log(obj);
+            for(let file of that.changeFiles){
+                if(file.filePath === obj){
+                    file.isCommit = true;
+                }
+            }
+            that.updateSCRStates(that.changeFiles);
+        };
+    }
+
+    private revert(){
+        let that = this;
+        return (...args: any[]) => {
+            let openFilePath: string = args[0];
+            console.log(openFilePath);
+            let file: SVNFile|null = null;
+            for(let f of that.changeFiles){
+                if(f.filePath === openFilePath){
+                    file = f;
+                }
+            }
+            if(file === null){
+                return;
+            }
+            that.globalSVN.revert([file], (result: string) => {
+                console.log(result);
+                that.outputChannel.append(result);
+                let resultLines = result.replace("\n", "").trimRight();
+                vscode.window.showWarningMessage(resultLines);
+                vscode.commands.executeCommand('svn.status');
+            });
+        };
+    }
+
+    private removeCommit(){
+        let that = this;
+        return (...args: any[]) => {
+            let obj = args[0];
+            console.log(obj);
+            for(let file of that.changeFiles){
+                if(file.filePath === obj){
+                    file.isCommit = false;
+                }
+            }
+            that.updateSCRStates(that.changeFiles);
+        };
+    }
+
+    private openChange(){
+        let that = this;
+        return async (...args: any[]) => {
+            let openFile: string = args[0];
+            let openFileName = path.basename(openFile);
+            let originalFile = await that.diffProvider.getSVNBaseFile(openFile);
+            console.log(openFile, originalFile);
+            vscode.commands.executeCommand('vscode.diff', 
+                                        vscode.Uri.file(originalFile ? originalFile : ''), 
+                                        vscode.Uri.file(openFile), 
+                                        `${openFileName}(base<-->workcopy)`);
+        };
+    }
+
+    private showBlame(){
+        let that = this;
+        return (...args: any[]) => {
+            let editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                return;
+            }
+    
+            let selectLineNumber = editor.selection.anchor.line + 1;
+            let editFile = editor.document.fileName;
+    
+            that.globalSVN.blame(editFile, selectLineNumber, (result: string, revision: string) => {
+                vscode.window.setStatusBarMessage(result);
+                const blameMsg = result;
+                that.globalSVN.log(editFile, revision, (result: string) => {
+                    that.outputChannel.append(`${blameMsg} \n>> commit message:\n${result}`);
+                    result = result.replace("\n", "\t");
+                    vscode.window.setStatusBarMessage(blameMsg + " >>commit message:" + result);
+                });
+            });
+        };
     }
 }
