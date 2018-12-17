@@ -113,7 +113,7 @@ export class SVN {
         });
     }
 
-    public add(addFiles: SVNFile[], resultCallBack: (result: number, data: String) => void): void {
+    public async add(addFiles: SVNFile[], resultCallBack: (result: number, data: String) => void): Promise<void> {
         if(addFiles.length <= 0){
             console.log("add file is empty.");
             return;
@@ -126,7 +126,7 @@ export class SVN {
                 console.log(`file: ${file.fileName} already added.`);
             }
         }
-        executeSVNCommand(args, (result: number, data: String) => {
+        await executeSVNCommand(args, (result: number, data: String) => {
             resultCallBack(result, data);
         });
     }

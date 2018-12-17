@@ -53,6 +53,15 @@
                 }
             },
             {
+                "command": "svn.revert",
+                "title": "revert",
+                "category": "SVN",
+                "icon": {
+                    "light": "resources/icons/light/revert.svg",
+                    "dark": "resources/icons/dark/revert.svg"
+                }
+            },
+            {
                 "command": "svn.update",
                 "title": "update",
                 "category": "SVN",
@@ -96,6 +105,11 @@
             ],
             "scm/resourceGroup/context": [
                 {
+                    "command": "svn.revert",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
+                },
+                {
                     "command": "svn.addCommit",
                     "when": "scmProvider == svn && scmResourceGroup == change_file",
                     "group": "inline"
@@ -107,6 +121,11 @@
                 }
             ],
             "scm/resourceState/context": [
+                {
+                    "command": "svn.revert",
+                    "when": "scmProvider == svn && scmResourceGroup == change_file",
+                    "group": "inline"
+                },
                 {
                     "command": "svn.addCommit",
                     "when": "scmProvider == svn && scmResourceGroup == change_file",
