@@ -106,7 +106,11 @@ export class SVN {
 
         let args = ['commit', '-m', message];
         for (let file of commitFiles) {
-            args.push(file.filePath);
+            let filePath = file.filePath;
+            if(filePath.includes("@")){
+                filePath = `${filePath}@`;  //避免由于文件名中包含@符号导致svn识别问题
+            }
+            args.push(filePath);
         }
         executeSVNCommand(args, (result: number, data: String) => {
             resultCallBack(`result: \n ${filesAddResult} \n ${data}`);
@@ -121,7 +125,11 @@ export class SVN {
         let args = ['add'];
         for(let file of addFiles){
             if(file.fileStatus === SVNFileStatus.Unversioned){
-                args.push(file.filePath);
+                let filePath = file.filePath;
+                if(filePath.includes("@")){
+                    filePath = `${filePath}@`;  //避免由于文件名中包含@符号导致svn识别问题
+                }
+                args.push(filePath);
             }else{
                 console.log(`file: ${file.fileName} already added.`);
             }

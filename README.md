@@ -7,6 +7,9 @@ simple svn implements for vscode.
 just test for myself. please don't install it!!!
 
 ## Release
+
+### 0.0.25
+* Fix bug where file name contains ‘@’ exception.
 ### 0.0.23
 * add revert support.
 * bug fix.
