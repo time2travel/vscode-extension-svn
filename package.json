@@ -140,6 +140,7 @@
             "editor/context": [
                 {
                     "command": "svn.showBlame",
+                    "when": "scmProvider == svn",
                     "group": "navigation"
                 }
             ]
