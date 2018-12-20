@@ -3,7 +3,7 @@
     "displayName": "SVN",
     "description": "simple svn implements for vscode.",
     "publisher": "Tianwu",
-    "version": "0.0.25",
+    "version": "0.0.26",
     "engines": {
         "vscode": "^1.29.0"
     },

@@ -104,6 +104,7 @@ export class SVN {
             });
         }
 
+        message = `\"${message}\"`;     //给message加上“”支持unicode
         let args = ['commit', '-m', message];
         for (let file of commitFiles) {
             let filePath = file.filePath;
